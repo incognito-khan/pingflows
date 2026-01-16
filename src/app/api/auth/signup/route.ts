@@ -54,6 +54,14 @@ export async function POST(req: Request) {
         email: true,
         fullName: true,
         createdAt: true,
+        workspace: {
+          select: {
+            id: true,
+            name: true,
+            createdAt: true,
+            ownerId: true
+          }
+        }
       },
     });
 

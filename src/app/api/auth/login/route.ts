@@ -49,7 +49,12 @@ export async function POST(req: Request) {
             id: user.id,
             email: user.email,
             fullName: user.fullName,
-            workspace: user.workspace
+            workspace: {
+                id: user.workspace?.id ?? null,
+                name: user.workspace?.name ?? null,
+                createdAt: user.workspace?.createdAt ?? null,
+                ownerId: user.workspace?.ownerId ?? null,
+            }
         },
         status: 200,
         success: true

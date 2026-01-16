@@ -1,34 +1,45 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/src/components/ui/button"
-import { Input } from "@/src/components/ui/input"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/src/components/ui/button";
+import { Input } from "@/src/components/ui/input";
+import { login } from "@/src/redux/slices/authSlice";
+import { useAppDispatch } from "@/src/redux/hooks";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const router = useRouter();
+  const dispatch = useAppDispatch();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
+    e.preventDefault();
+    setError("");
 
     if (!email || !password) {
-      setError("Please fill in all fields")
-      return
+      setError("Please fill in all fields");
+      return;
     }
 
-    setIsLoading(true)
-    // Simulate login
-    setTimeout(() => {
-      setIsLoading(false)
-      // In a real app, this would make an API call
-    }, 1000)
-  }
+    setIsLoading(true);
+    try {
+      const response = await dispatch(login({ email, password }));
+      if (response.payload.success) {
+        setIsLoading(false);
+        router.push("/");
+      }
+    } catch (error) {
+      console.error(error);
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -43,16 +54,24 @@ export default function LoginPage() {
 
         {/* Form Card */}
         <div className="bg-card border border-border rounded-lg p-8 mb-4">
-          <h1 className="text-2xl font-bold text-foreground mb-2">Welcome back</h1>
-          <p className="text-muted-foreground mb-6">Sign in to your PingFollow account</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            Welcome back
+          </h1>
+          <p className="text-muted-foreground mb-6">
+            Sign in to your PingFollow account
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Email</label>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Email
+              </label>
               <Input
                 type="email"
                 placeholder="you@example.com"
@@ -63,7 +82,9 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Password</label>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Password
+              </label>
               <Input
                 type="password"
                 placeholder="Enter your password"
@@ -81,11 +102,14 @@ export default function LoginPage() {
 
         <p className="text-center text-muted-foreground text-sm">
           Don't have an account?{" "}
-          <Link href="/signup" className="text-primary hover:underline font-medium">
+          <Link
+            href="/signup"
+            className="text-primary hover:underline font-medium"
+          >
             Sign up
           </Link>
         </p>
       </div>
     </div>
-  )
+  );
 }

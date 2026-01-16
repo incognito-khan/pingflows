@@ -1,10 +1,28 @@
-import Link from "next/link"
-import { Button } from "@/src/components/ui/button"
-import { Card } from "@/src/components/ui/card"
-import { Plus } from "lucide-react"
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/src/components/ui/button";
+import { Card } from "@/src/components/ui/card";
+import { Plus } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/src/redux/hooks";
+import { fetchLeads } from "@/src/redux/slices/leadSlice";
+import { format } from "date-fns";
 
 export default function LeadsPage() {
-  const leads = [
+  const dispatch = useAppDispatch();
+  const { leads, loading, error } = useAppSelector((state) => state.lead);
+  console.log(leads);
+
+  const fetchLeadsData = () => {
+    dispatch(fetchLeads());
+  };
+
+  useEffect(() => {
+    fetchLeadsData();
+  }, []);
+
+  const sleads = [
     {
       id: 1,
       name: "John Smith",
@@ -41,20 +59,30 @@ export default function LeadsPage() {
       nextFollowUp: "2026-01-20",
       company: "Future Ventures",
     },
-  ]
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "contacted":
-        return "bg-green-50 text-green-700 border-green-200"
-      case "lead":
-        return "bg-blue-50 text-blue-700 border-blue-200"
-      case "overdue":
-        return "bg-red-50 text-red-700 border-red-200"
+      case "OPEN":
+        // Active / new lead → green
+        return "bg-green-50 text-green-700 border-green-200";
+
+      case "WAITING":
+        // Pending / paused → yellow (not blue)
+        return "bg-yellow-50 text-yellow-800 border-yellow-200";
+
+      case "CLOSE":
+        // Done / finished → gray (not red)
+        return "bg-gray-100 text-gray-700 border-gray-300";
+
       default:
-        return "bg-gray-50 text-gray-700 border-gray-200"
+        return "bg-gray-50 text-gray-600 border-gray-200";
     }
-  }
+  };
+
+  const formatDate = (date: any) => {
+    return format(date, "yyyy-MM-dd");
+  };
 
   return (
     <div>
@@ -74,34 +102,59 @@ export default function LeadsPage() {
           <table className="w-full">
             <thead className="bg-secondary/50 border-b border-border">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Name</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Company</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Status</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Next Follow-Up</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Actions</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                  Name
+                </th>
+                {/* <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                  Company
+                </th> */}
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                  Next Follow-Up
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
-              {leads.map((lead) => (
-                <tr key={lead.id} className="border-b border-border hover:bg-secondary/20 transition-colors">
+              {leads?.map((lead) => (
+                <tr
+                  key={lead.id}
+                  className="border-b border-border hover:bg-secondary/20 transition-colors"
+                >
                   <td className="px-6 py-4">
                     <div>
                       <p className="font-medium text-foreground">{lead.name}</p>
-                      <p className="text-sm text-muted-foreground">{lead.email}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {lead.email}
+                      </p>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-foreground">{lead.company}</td>
+                  {/* <td className="px-6 py-4 text-sm text-foreground">
+                    {lead.company}
+                  </td> */}
                   <td className="px-6 py-4">
                     <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(lead.status)}`}
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                        lead.status
+                      )}`}
                     >
                       {lead.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-foreground">{lead.nextFollowUp}</td>
+                  <td className="px-6 py-4 text-sm text-foreground">
+                    {formatDate(lead.nextFollowUpAt)}
+                  </td>
                   <td className="px-6 py-4">
                     <Link href={`/app/leads/${lead.id}`}>
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="cursor-pointer"
+                      >
                         View
                       </Button>
                     </Link>
@@ -113,5 +166,5 @@ export default function LeadsPage() {
         </div>
       </Card>
     </div>
-  )
+  );
 }
